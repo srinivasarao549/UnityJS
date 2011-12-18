@@ -1,38 +1,31 @@
-UnityJS({
+
+//Configure require
+require.config({
 	"baseUrl": "../"
-}, function(unity) {
+});
 
-	var data = {
-		"buttons": [
-			{
-				"label": "Our Services",
-				"target": "services"
-			},
-			{
-				"label": "Web Portfolio",
-				"target": "portfolio"
-			},
-			{
-				"label": "Array Creative",
-				"target": "creative"
-			},
-			{
-				"label": "Our Team",
-				"target": "team"
-			},
-			{
-				"label": "Evo System",
-				"target": "evo"
-			}
-		]
-	};
+require(["unity"], function (UnityJS) {
 
-	window.data = data;
+	//create an instance of unity
+	UnityJS({
+		"baseUrl": "../"
+	}, function(unity) {
 
-	var nav = unity.element.create('nav', data, 'nav');
+		var data = {
+			"buttons": [
+				{ "label": "Our Services", "target": "services" },
+				{ "label": "Web Portfolio", "target": "portfolio" },
+				{ "label": "Array Creative", "target": "creative" },
+				{ "label": "Our Team", "target": "team" },
+				{ "label": "Evo System", "target": "evo" }
+			]
+		};
 
-	nav.element.appendTo('body');
+		var nav = unity.view.create('nav', data, 'nav');
 
-	throw "I'm going to try to kill unity!"
+		nav.element.appendTo('body');
+
+	});
 
 });
+

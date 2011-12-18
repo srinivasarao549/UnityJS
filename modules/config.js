@@ -1,4 +1,4 @@
-define(['modules/util', 'modules/debug'], function(u, debug){
+define(['components/util', 'modules/debug'], function(u, debug){
 
 	/**
 	 * These are the default settings for UnityJS.

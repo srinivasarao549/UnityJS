@@ -1,4 +1,4 @@
-define(['modules/util'], function(u) {
+define(['components/util'], function(u) {
 
 	function createToast(args) {
 

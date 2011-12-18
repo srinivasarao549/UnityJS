@@ -44,7 +44,7 @@
 			};
 
 			//require unity's parts
-			require(['modules/config', 'modules/element', 'modules/model', 'modules/debug'], function(config, element, model, debug){
+			require(['modules/config', 'modules/view', 'modules/model', 'modules/debug'], function(config, view, model, debug){
 
 				//parse the config
 				config.extend(args);
@@ -52,7 +52,7 @@
 				//create the api object
 				var API = {
 					'config': config,
-					'element': element,
+					'view': view,
 					'model': model,
 					'debug': debug
 				};
