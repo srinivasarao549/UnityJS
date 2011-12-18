@@ -1,0 +1,34 @@
+.UnityJS-toast-wrapper {
+	position: absolute;
+	top: 30px;
+	width: 100%;
+}
+.UnityJS-toast {
+	position: absolute;
+	font-family: Helvetica, Arial, sans-serif;
+	left: 30px;
+	padding: 10px 30px;
+	background: #eee;
+	border: 1px solid #fff;
+	border-radius: 6px;
+	box-shadow: 6px 6px 30px #000;
+	color: #000;
+}
+
+.UnityJS-toast.UnityJS-error {
+	background: #833;
+	color: #fff;
+	border: 1px solid #b33;
+}
+.UnityJS-toast.UnityJS-error h1{
+	font-size: 18px;
+}
+.UnityJS-toast.UnityJS-error p{
+	font-size: 12px;
+}
+.UnityJS-toast.UnityJS-error pre{
+	font-size: 10px;
+	background: #944;
+	padding: 10px;
+	border: 1px solid #a33;
+}
