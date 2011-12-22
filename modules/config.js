@@ -8,7 +8,8 @@ define(['components/util', 'modules/debug'], function(u, debug){
 	var config = {
 		"baseUrl": "",
 		"onError": onError,
-		"extend": extend
+		"merge": merge,
+		"templates": false
 	};
 
 	/**
@@ -23,8 +24,8 @@ define(['components/util', 'modules/debug'], function(u, debug){
 	 * Allows the config to extend itself
 	 * @param args
 	 */
-	function extend(args) {
-		config = u.extend(config, args);
+	function merge(args) {
+		u.merge(config, args);
 	}
 
 	return config;

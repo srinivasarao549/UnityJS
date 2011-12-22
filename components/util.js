@@ -85,51 +85,114 @@ define(function() {
 	}
 
 	/**
-	 * Takes a model object and a mirror that will assume the models structure and values. This method is similar
-	 * to clone accept it mutates the mirror object to resemble the model instead of producing a replacement.
-	 * @param modelObject
-	 * @param mirrorObject
+	 * Takes a subject object and merges the secondary object into it.
+	 * @param subjectObject
+	 * @param secondaryObject
 	 */
-	function mirror(modelObject, mirrorObject) {
+	function merge(subjectObject, secondaryObject) {
 
 		//make sure both are objects
-		if(typeof mirrorObject !== 'object' || typeof modelObject !== 'object') { throw new Error('UnityJS: I can\'t mirror a variable because ether the mirror or the object are different types.'); }
+		if(typeof secondaryObject !== 'object' || typeof subjectObject !== 'object') { throw new Error('UnityJS: I can\'t mirror a variable because ether the mirror or the object are different types.'); }
 
 		//copy over missing properties to the mirror
-		for(var key in modelObject) {
+		for(var key in secondaryObject) {
 
-			if(!modelObject.hasOwnProperty(key)) { continue; }
+			if(!secondaryObject.hasOwnProperty(key)) { continue; }
 
 			//if the property is an object
-			if(typeof modelObject[key] === 'object') {
+			if(typeof secondaryObject[key] === 'object') {
 
-				//if the mirror has no object at the same key then create it
-				if(typeof mirrorObject[key] !== 'object') {
-					if(typeof modelObject[key].push === 'function') {
-						mirrorObject[key] = [];
+				//if the subject has no object at the same key then create it
+				if(typeof subjectObject[key] !== 'object') {
+					if(typeof secondaryObject[key].push === 'function') {
+						subjectObject[key] = [];
 					} else {
-						mirrorObject[key] = {};
+						subjectObject[key] = {};
 					}
 				}
 
-				//mirror the objects
-				mirror(modelObject[key], mirrorObject[key]);
+				//merge the sub objects
+				merge(subjectObject[key], secondaryObject[key]);
 
 			} else {
-				mirrorObject[key] = modelObject[key];
+				subjectObject[key] = secondaryObject[key];
 			}
 		}
+	}
+
+	function reduce(subjectObject, modelObject) {
+
+		if(typeof subjectObject !== 'object' || typeof modelObject !== 'object') {
+			throw new Error("UnityJS: While trying to reduce an object I realized that the application passed me a non object. Both the subject object and the model object must be real objects for me to preform a reduce.");
+		}
+
+		//if the subject is an array
+		if(typeof subjectObject.push === 'function') {
+			var length = subjectObject.length;
+			for(var sI = 0; sI < length; sI += 1) {
+
+				if(typeof subjectObject[sI] === 'object' && typeof modelObject[sI] === 'object') {
+					reduce(subjectObject[sI], modelObject[sI]);
+				} else {
+					//check to see if the model has the same value
+					if(typeof modelObject[sI] === "undefined") {
+						subjectObject.splice(sI, 1);
+					}
+				}
+			}
+		} else {
+			//loop through the model
+			for(var key in subjectObject) {
+
+				if(typeof subjectObject[key] === 'object' && typeof modelObject[key] === 'object') {
+					reduce(subjectObject[key], modelObject[key]);
+				} else {
+
+					//check to see if the model has the same value
+					if(modelObject[key] !== subjectObject[key]) {
+						delete subjectObject[key];
+					}
+				}
+
+			}
+		}
+	}
+
+	/**
+	 * Takes a model object and a mirror that will assume the models structure and values. This method is similar
+	 * to clone accept it mutates the mirror object to resemble the model instead of producing a replacement.
+	 * @param subjectObject
+	 * @param modelObject
+	 */
+	function mirror(subjectObject, modelObject) {
+
+		merge(subjectObject, modelObject);
 
 		//delete properties the object does not have
-		for(var key in mirrorObject) {
-			if(!mirrorObject.hasOwnProperty(key)) { continue; }
-			if(!modelObject.hasOwnProperty(key)) { delete mirrorObject[key]; }
+		reduce(subjectObject, modelObject);
+	}
+
+	/**
+	 * Creates an execution counter object
+	 * @param limit
+	 * @param callback
+	 */
+	function callCounter(limit, callback) {
+		var i = 0;
+		return function(){
+			if(i < limit - 1) {
+				i += 1;
+			} else if(typeof callback === 'function') {
+				callback();
+			}
 		}
 	}
 
 	return {
 		"extend": extend,
 		"compare": compare,
-		"mirror": mirror
+		"merge": merge,
+		"mirror": mirror,
+		"callCounter": callCounter
 	}
 });

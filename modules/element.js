@@ -38,7 +38,7 @@ define(['modules/util', 'modules/templateParser', 'modules/loop'], function(u, t
 		if(typeof id !== 'string') { throw new Error('UnityJS: I couldn\'t parse a template because it had an invalid id.'); }
 		if(typeof data !== 'object') { throw new Error('UnityJS: I couldn\'t parse a template because it had an invalid data object.'); }
 
-		wrappingTagName = wrappingTagName || 'div';
+		tagNamwe = tagNamwe || 'div';
 
 		//get the template
 		var template = $('#' + id).html();
@@ -47,7 +47,7 @@ define(['modules/util', 'modules/templateParser', 'modules/loop'], function(u, t
 
 		//create the element object
 		var element = {
-			"element": $('<' + wrappingTagName + '><' + wrappingTagName + '>')
+			"element": $('<' + tagNamwe + '><' + tagNamwe + '>')
 		};
 
 		//bind watch to all of the properties of the data object

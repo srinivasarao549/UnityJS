@@ -34,7 +34,6 @@
 			//set the base url
 			require.config({
 				"baseUrl": args.baseUrl || '',
-				"deps": ['lib/jquery'],
 				"catchError": { "define": false }
 			});
 
@@ -44,27 +43,39 @@
 			};
 
 			//require unity's parts
-			require(['modules/config', 'modules/view', 'modules/model', 'modules/debug'], function(config, view, model, debug){
+			require(['modules/config', 'modules/router', 'modules/view', 'modules/model', 'modules/debug'], function(config, router, view, model, debug){
 
 				//parse the config
-				config.extend(args);
+				config.merge(args);
 
-				//create the api object
-				var API = {
-					'config': config,
-					'view': view,
-					'model': model,
-					'debug': debug
-				};
+				//load templates
+				if(config.templates) {
+					view.fetchTemplate(config.templates, buildApi);
+				} else {
+					buildApi();
+				}
 
-				//try running the application
-				try {
 
-					//Pass the api to the callback
-					callback(API);
+				function buildApi() {
 
-				} catch(error) {
-					config.onError(error);
+					//create the api object
+					var API = {
+						'config': config,
+						'router': router,
+						'view': view,
+						'model': model,
+						'debug': debug
+					};
+
+					//try running the application
+					//try {
+
+						//Pass the api to the callback
+						callback(API);
+
+					//} catch(error) {
+						//config.onError(error);
+					//}
 				}
 			});
 		}

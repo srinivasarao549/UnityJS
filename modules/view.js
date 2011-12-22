@@ -1,18 +1,14 @@
-define(['components/util', 'components/templateParser', 'components/loop'], function(u, templateParser, Loop) {
+define(['components/util', 'components/templateParser', 'components/loop', 'modules/config'], function(u, templateParser, Loop, config) {
 
 	//set the parser to the built in parser
 	var parser = templateParser;
 
 	//create the views loop
 	var viewLoop = Loop(10);
-
-	//start the loop
 	viewLoop.start();
 
-	function registerNewParser(templateParser) {
-		if(typeof templateParser !== 'function') { throw new Error('UnityJS: It seams you tried to replace my template parser with an invalid function. No Dice sorry.'); }
-		parser = templateParser;
-	}
+	//the templates
+	var templates = {};
 
 	function watch(data, onChange) {
 
@@ -20,76 +16,116 @@ define(['components/util', 'components/templateParser', 'components/loop'], func
 
 		//create the mirror
 		var mirror = {};
-		u.mirror(data, mirror);
+		u.mirror(mirror, data);
 
 		//register a function to compare the object to its last state every cycle
 		viewLoop.register(function(){
 
 			//if the mirror doesn't match the data object then mirror it again and fire draw
 			if(!u.compare(data, mirror)) {
-				u.mirror(data, mirror);
+				u.mirror(mirror, data);
 				onChange();
 			}
 		});
 	}
 
-	function createView(id, data, wrappingTagName, callback) {
+	function registerNewParser(templateParser) {
+		if(typeof templateParser !== 'function') { throw new Error('UnityJS: It seams you tried to replace my template parser with an invalid function. No Dice sorry.'); }
+		parser = templateParser;
+	}
 
-		if(typeof id !== 'string') { throw new Error('UnityJS: I couldn\'t parse a template because it had an invalid id.'); }
+	function createView(templateId, data, $parentNode) {
+
+		if(typeof templateId !== 'string') { throw new Error('UnityJS: I couldn\'t parse a template because it had an invalid id.'); }
 		if(typeof data !== 'object') { throw new Error('UnityJS: I couldn\'t parse a template because it had an invalid data object.'); }
 
-		wrappingTagName = wrappingTagName || 'div';
-
-		//get the template
-		var template = $('#' + id).html();
-
-		//if a template is not on the page then assume its a file url and try to require it
-		if(template) {
-			
-		} else {
-			$.ajax({
-				"url": id,
-				"type": "text/plain",
-				"success": function(data) {
-
-				},
-				"error": function() {
-
-				}
-			});
-		}
-
-		if(!template) { throw new Error('UnityJS: I couldn\'t parse a template because it had no markup.') }
-
-
-		function parse() {
-
+		if(typeof $parentNode === "string") {
+			$parentNode = $($parentNode);
 		}
 
 		//create the view object
 		var view = {
-			"element": $('<' + wrappingTagName + '><' + wrappingTagName + '>')
+			"element": false
 		};
+
+		//get the template
+		var template = '';
+		if(templates[templateId]) {
+			template = templates[templateId];
+		} else {
+			template = $('#' + templateId).html();
+		}
+
+		//if there is no template throw an error
+		if(!template) { return false; }
+
+		/**
+		 * Draws/Redraws the view
+		 */
+		function draw() {
+
+			//save the html data
+			view.html = parser(template, data);
+
+			//create the new element
+			var $element = $(view.html);
+
+			//if the element is being redrawn
+			if(view.element) {
+				view.element.replaceWith($element);
+			} else {
+				if($parentNode) {
+					$element.appendTo($parentNode);
+				}
+			}
+
+			//save the element to the view object
+			view.element = $element;
+		}
 
 		//bind watch to all of the properties of the data object
 		watch(data, draw);
 
-		//call draw for the first time
+		//call first draw
 		draw();
 
-		/**
-		 * Updates the view
-		 */
-		function draw() {
-			view.element.html(parser(template, data));
-		}
-
-		//return the view
+		//return the element in case waiting for the view to compute is not required.
 		return view;
+	}
 
+	/**
+	 * Fetches a template
+	 */
+	function fetchTemplate(id, url, callback) {
+
+		//if a number of templates are being requested
+		if(typeof id === 'object') {
+			callback = url;
+
+			var execObject = u.callCounter(id.length, callback);
+
+			for(var i = 0; i < id.length; i += 1) {
+				fetchTemplate(id[i].id, id[i].url, execObject);
+			}
+		} else {
+
+			$.ajax({
+				"url": config.baseUrl + url,
+				"cache": false,
+				"success": function(res) {
+
+					//save the template
+					templates[id] = res;
+					if(typeof callback === 'function') { callback(); }
+				}
+			});
+
+		}
 	}
 
 	return {
-		"create": createView
+		"parser": registerNewParser,
+		"create": createView,
+		"fetchTemplate": fetchTemplate
 	}
 });
