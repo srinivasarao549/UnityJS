@@ -67,15 +67,23 @@
 						'debug': debug
 					};
 
-					//try running the application
-					//try {
+					if(config.debug) {
 
 						//Pass the api to the callback
 						callback(API);
 
-					//} catch(error) {
-						//config.onError(error);
-					//}
+					} else {
+
+						//try running the application
+						try {
+
+							//Pass the api to the callback
+							callback(API);
+
+						} catch(error) {
+							config.onError(error);
+						}
+					}
 				}
 			});
 		}

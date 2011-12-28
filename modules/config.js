@@ -25,6 +25,7 @@ define(['components/util', 'modules/debug'], function(u, debug){
 	 * @param args
 	 */
 	function merge(args) {
+		if(args.merge) { delete args.merge; }
 		u.merge(config, args);
 	}
 

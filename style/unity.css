@@ -19,9 +19,11 @@
 	background: #833;
 	color: #fff;
 	border: 1px solid #b33;
+	line-height: 1.8em;
 }
 .UnityJS-toast.UnityJS-error h1{
 	font-size: 18px;
+	margin: 0.8em 0;
 }
 .UnityJS-toast.UnityJS-error p{
 	font-size: 12px;

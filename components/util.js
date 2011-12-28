@@ -34,12 +34,43 @@ define(function() {
 				//the property must not be from a prototype
 				if(!object.hasOwnProperty(key)) { continue; }
 
-				//save the property to the merged object
-				merged[key] = object[key];
+				//copy the property
+				if(typeof object[key] === 'object') {
+					merged[key] = clone(object[key]);
+				} else {
+					merged[key] = object[key];
+				}
 			}
 		}
 
 		return merged;
+	}
+
+	/**
+	 * Clones an object
+	 * @param object
+	 */
+	function clone(object) {
+		if(typeof object !== 'object') { return false; }
+
+		//create the empty clone
+		var cloned = typeof object.push === 'function' && [] || {};
+
+		//loop through the object's properties
+		for(var key in object) {
+
+			//the property must not be from a prototype
+			if(!object.hasOwnProperty(key)) { continue; }
+
+			//clone sub objects
+			if(typeof object[key] === 'object') {
+				cloned[key] = clone(object[key]);
+			} else {
+				cloned[key] = object[key];
+			}
+		}
+
+		return cloned;
 	}
 
 	/**
@@ -143,6 +174,7 @@ define(function() {
 		} else {
 			//loop through the model
 			for(var key in subjectObject) {
+				if(subjectObject.hasOwnProperty(key)) { continue; }
 
 				if(typeof subjectObject[key] === 'object' && typeof modelObject[key] === 'object') {
 					reduce(subjectObject[key], modelObject[key]);
@@ -166,9 +198,10 @@ define(function() {
 	 */
 	function mirror(subjectObject, modelObject) {
 
+		//merge the model into the subject
 		merge(subjectObject, modelObject);
 
-		//delete properties the object does not have
+		//delete properties from the subject the model does not have
 		reduce(subjectObject, modelObject);
 	}
 
@@ -179,7 +212,8 @@ define(function() {
 	 */
 	function callCounter(limit, callback) {
 		var i = 0;
-		return function(){
+
+		return function() {
 			if(i < limit - 1) {
 				i += 1;
 			} else if(typeof callback === 'function') {
@@ -190,6 +224,7 @@ define(function() {
 
 	return {
 		"extend": extend,
+		"clone": clone,
 		"compare": compare,
 		"merge": merge,
 		"mirror": mirror,
