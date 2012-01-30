@@ -12,6 +12,9 @@ define(['lib/handlebars'], function (Handlebars) {
 		return cache[source](data);
 	}
 
+	//attach handlebars to the parse function
+	parse.Handlebars = Handlebars;
+
 	return parse;
 
 });

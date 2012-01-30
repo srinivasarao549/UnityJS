@@ -14,31 +14,12 @@ define(['modules/util', 'modules/templateParser', 'modules/loop'], function(u, t
 		parser = templateParser;
 	}
 
-	function watch(data, onChange) {
-
-		if(!typeof onChange === 'function') { throw new Error('UnityJS: I tried to watch a data object for changes but the application gave me a invalid function as a handler.'); }
-
-		//create the mirror
-		var mirror = {};
-		u.mirror(data, mirror);
-
-		//register a function to compare the object to its last state every cycle
-		elementLoop.register(function(){
-
-			//if the mirror doesn't match the data object then mirror it again and fire draw
-			if(!u.compare(data, mirror)) {
-				u.mirror(data, mirror);
-				onChange();
-			}
-		});
-	}
-
 	function createElement(id, data, wrappingTagName) {
 
 		if(typeof id !== 'string') { throw new Error('UnityJS: I couldn\'t parse a template because it had an invalid id.'); }
 		if(typeof data !== 'object') { throw new Error('UnityJS: I couldn\'t parse a template because it had an invalid data object.'); }
 
-		tagNamwe = tagNamwe || 'div';
+		wrappingTagName = wrappingTagName || 'div';
 
 		//get the template
 		var template = $('#' + id).html();
@@ -47,7 +28,7 @@ define(['modules/util', 'modules/templateParser', 'modules/loop'], function(u, t
 
 		//create the element object
 		var element = {
-			"element": $('<' + tagNamwe + '><' + tagNamwe + '>')
+			"element": $('<' + wrappingTagName + '><' + wrappingTagName + '>')
 		};
 
 		//bind watch to all of the properties of the data object

@@ -19,21 +19,26 @@
 			args = {};
 		}
 
+		//make sure the unity base is set
+		args.UnityUrl = args.UnityUrl || 'UnityJS/';
+
 		//fetch require js
 		if(typeof requirejs === 'undefined') {
-			console.log('UnityJS: I had to fetch require.js because it was missing and I need it to load my modules.');
-			loadScript((args.baseUrl|| '') + 'lib/require.js', function() {
+			loadScript(args.UnityUrl + 'lib/require.js', function() {
 				init();
 			});
 		} else {
 			init();
 		}
 
+		/**
+		 * Creates a Unity instance
+		 */
 		function init() {
 
 			//set the base url
 			require.config({
-				"baseUrl": args.baseUrl || '',
+				"baseUrl": args.UnityUrl,
 				"catchError": { "define": false }
 			});
 

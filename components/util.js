@@ -185,7 +185,6 @@ define(function() {
 						delete subjectObject[key];
 					}
 				}
-
 			}
 		}
 	}
@@ -203,6 +202,37 @@ define(function() {
 
 		//delete properties from the subject the model does not have
 		reduce(subjectObject, modelObject);
+	}
+
+	/**
+	 * Watches a data structure and fires a callback when it changes
+	 * @param data
+	 * @param onChange
+	 */
+	function watch(data, onChange) {
+
+		if(!typeof onChange === 'function') { throw new Error('UnityJS: I tried to watch a data object for changes but the application gave me a invalid function as a handler.'); }
+
+		//TODO use getters and setters if they exist
+
+		//legacy watch
+
+		//create the mirror object and populate it with data
+		var mirrorObj = {};
+		mirror(mirrorObj, data);
+
+		//register a function to compare the object to its last state every cycle
+		setInterval(function(){
+
+			//if the mirror doesn't match the data object then mirror it again and fire draw
+			if(!compare(mirrorObj, data)) {
+				mirror(mirrorObj, data);
+				onChange();
+			}
+
+		}, 10);
+
+
 	}
 
 	/**
@@ -228,6 +258,7 @@ define(function() {
 		"compare": compare,
 		"merge": merge,
 		"mirror": mirror,
+		"watch": watch,
 		"callCounter": callCounter
 	}
 });

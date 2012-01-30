@@ -10,59 +10,94 @@ define(['components/util', 'components/templateParser', 'components/loop', 'modu
 	//the templates
 	var templates = {};
 
-	function watch(data, onChange) {
+	/**
+	 * Replaces or returns the template parser
+	 * @param templateParser
+	 */
+	function parser(templateParser) {
 
-		if(!typeof onChange === 'function') { throw new Error('UnityJS: I tried to watch a data object for changes but the application gave me a invalid function as a handler.'); }
+		//If a new parser is passed then replace the old one
+		if(typeof templateParser === 'function') {
 
-		//create the mirror
-		var mirror = {};
-		u.mirror(mirror, data);
+			parser = templateParser;
+			return true;
 
-		//register a function to compare the object to its last state every cycle
-		viewLoop.register(function(){
+		//if a invalid parser is passed return false
+		} else if(templateParser) {
 
-			//if the mirror doesn't match the data object then mirror it again and fire draw
-			if(!u.compare(data, mirror)) {
-				u.mirror(mirror, data);
-				onChange();
-			}
-		});
+			return false;
+
+		//if nothing is passed return the parser
+		} else {
+
+			return templateParser;
+		}
 	}
 
-	function registerNewParser(templateParser) {
-		if(typeof templateParser !== 'function') { throw new Error('UnityJS: It seams you tried to replace my template parser with an invalid function. No Dice sorry.'); }
-		parser = templateParser;
-	}
+	/**
+	 * Creates a view
+	 * @param templateId
+	 * @param data
+	 * @param $parentNode
+	 * @param mapCallback
+	 */
+	function createView(templateId, data, $parentNode, mapCallback) {
 
-	function createView(templateId, data, $parentNode) {
-
+		//validate the required arguments
 		if(typeof templateId !== 'string') { throw new Error('UnityJS: I couldn\'t parse a template because it had an invalid id.'); }
 		if(typeof data !== 'object') { throw new Error('UnityJS: I couldn\'t parse a template because it had an invalid data object.'); }
 
+		//set defaults and normalize
+		if(typeof $parentNode === 'function') {
+			mapCallback = $parentNode;
+			$parentNode = false;
+		}
 		if(typeof $parentNode === "string") {
 			$parentNode = $($parentNode);
 		}
 
-		//create the view object
-		var view = {
-			"element": false
-		};
+		//Create a callbacks object to store redraw callbacks
+		var callbacks = [];
 
-		//get the template
+		//Create a empty default template
 		var template = '';
+
+		//find the template by id
 		if(templates[templateId]) {
 			template = templates[templateId];
 		} else {
 			template = $('#' + templateId).html();
 		}
 
-		//if there is no template throw an error
+		//if there is no template for the given id then return false
 		if(!template) { return false; }
+
+		//create the view object
+		var view = {
+			"element": false,
+			"redraw": draw,
+			"onRedraw": registerOnDraw
+		};
+
+		//if the data object changes then redraw
+		u.watch(data, draw);
+
+		//call draw
+		draw();
+
+
+
+		/////////////
+		// Methods //
+		/////////////
 
 		/**
 		 * Draws/Redraws the view
 		 */
 		function draw() {
+
+			//execute the map function if present
+			if(mapCallback) { data = mapCallback(template, data); }
 
 			//save the html data
 			view.html = parser(template, data);
@@ -81,13 +116,17 @@ define(['components/util', 'components/templateParser', 'components/loop', 'modu
 
 			//save the element to the view object
 			view.element = $element;
+
+			//fire the callbacks
+			for(var cI = 0; cI < callbacks.length; cI += 1) { callbacks[cI](); }
 		}
 
-		//bind watch to all of the properties of the data object
-		watch(data, draw);
-
-		//call first draw
-		draw();
+		/**
+		 * Binds a callback to fire on draw
+		 */
+		function registerOnDraw(callback) {
+			if(typeof callback === 'function') { callbacks.push(callback); }
+		}
 
 		//return the element in case waiting for the view to compute is not required.
 		return view;
@@ -109,6 +148,7 @@ define(['components/util', 'components/templateParser', 'components/loop', 'modu
 			}
 		} else {
 
+			//pull in the
 			$.ajax({
 				"url": config.baseUrl + url,
 				"cache": false,
@@ -123,8 +163,10 @@ define(['components/util', 'components/templateParser', 'components/loop', 'modu
 		}
 	}
 
+
+
 	return {
-		"parser": registerNewParser,
+		"parser": parser,
 		"create": createView,
 		"fetchTemplate": fetchTemplate
 	}
